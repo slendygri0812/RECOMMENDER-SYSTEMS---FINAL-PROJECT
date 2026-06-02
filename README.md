@@ -63,7 +63,7 @@ $$
 Donde $M_{t, t'} = 0$ si $t \ge t'$, de lo contrario $-\infty$.
 
 ### 5. Predicción y Cálculo de Logits
-Para puntuar la probabilidad de consumir cada ítem candidato $j$ en el paso siguiente, se calcula el producto punto entre la última salida secuencial del Transformer $\mathbf{h}_{last} = \mathbf{h}_L$ y las representaciones fusionadas de todos los ítems $W \in \mathbb{R}^{(N_{items}+1) \times d_{model}}$:
+Para puntuar la probabilidad de consumir cada ítem candidato $j$ en el paso siguiente, se calcula el producto punto entre la última salida secuencial del Transformer $\mathbf{h}\_{last} = \mathbf{h}\_L$ y las representaciones fusionadas de todos los ítems $W \in \mathbb{R}^{(N\_{items}+1) \times d\_{model}}$:
 
 $$
 \hat{\mathbf{y}}_u = \mathbf{h}_{last} W^T \in \mathbb{R}^{N_{items}+1}
