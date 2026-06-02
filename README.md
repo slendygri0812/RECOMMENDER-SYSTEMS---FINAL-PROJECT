@@ -21,7 +21,7 @@ Para el ítem de padding (ID `0`), se asigna un vector nulo:
 $$\mathbf{e}_0^{bert} = \mathbf{0} \in \mathbb{R}^{768}$$
 
 ### 2. Fusión Comportamental y Semántica
-Para cada ítem j, sumamos linealmente su embedding comportamental (ID) y la proyección lineal de sus características de BERT:
+Para cada ítem $$j$$, sumamos linealmente su embedding comportamental (ID) y la proyección lineal de sus características de BERT:
 $$\mathbf{w}_j = \mathbf{e}_j^{behav} + \left( \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj} \right)$$
 Donde $$\mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}$$, $$\mathbf{W}_{proj} \in \mathbb{R}^{768 \times d_{model}}$$ y $$\mathbf{w}_j \in \mathbb{R}^{d_{model}}$$.
 
