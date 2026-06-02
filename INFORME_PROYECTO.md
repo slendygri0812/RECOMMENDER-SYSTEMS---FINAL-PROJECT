@@ -53,7 +53,10 @@ BERT no lee palabras completas ni letras individuales, sino que implementa **Wor
 
 #### D. Mecanismo de Auto-Atención (Self-Attention) y su Formulación
 La extracción del contexto en BERT se realiza mediante **Multi-Head Self-Attention**. Para cada token de la secuencia, se calculan tres vectores proyectados a través del producto punto y escalado:
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+$$
 
 El significado y propósito de cada componente matemático en la fórmula es:
 * **Query ($Q$) - "Lo que busco"**: Representa la pregunta o consulta del token actual al resto de la secuencia.
@@ -66,27 +69,50 @@ El significado y propósito de cada componente matemático en la fórmula es:
 
 #### E. Aplicación en el recomendador
 Dada una descripción o reseña textual $T_i$ para cada juego $i$, se tokeniza con WordPiece y pasa por el codificador bidireccional. Extraemos el vector semántico denso final asociado al token `[CLS]` en la última capa oculta de DistilBERT:
-$$\mathbf{e}_i^{bert} = \text{TFDistilBERT}(T_i)[0, 0, :] \in \mathbb{R}^{768}$$
+
+$$
+\mathbf{e}_i^{bert} = \text{TFDistilBERT}(T_i)[0, 0, :] \in \mathbb{R}^{768}
+$$
+
 Para el ítem de padding (ID `0`), se inicializa con un vector nulo:
-$$\mathbf{e}_0^{bert} = \mathbf{0} \in \mathbb{R}^{768}$$
+
+$$
+\mathbf{e}_0^{bert} = \mathbf{0} \in \mathbb{R}^{768}
+$$
 
 ### 2.2 Fusión Comportamental-Semántica
 Para un ítem dado $j$, su representación final fusionada $\mathbf{w}_j$ une dos fuentes de información:
 1.  **Embedding de Comportamiento (`behavioral_emb`)**: Representación de ID clásica que aprende patrones colaborativos puros: $\mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}$.
 2.  **Proyección Semántica (`semantic_projection`)**: Una capa lineal densa proyecta el vector de BERT de 768 dimensiones a la dimensión oculta del modelo ($d_{model}$):
-    $$\mathbf{e}_j^{sem} = \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj}$$
+
+$$
+\mathbf{e}_j^{sem} = \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj}
+$$
+
 *   **Fusión Aditiva**: Ambos vectores se suman para obtener la representación definitiva:
-    $$\mathbf{w}_j = \mathbf{e}_j^{behav} + \mathbf{e}_j^{sem}$$
-    *(Nota: El ID 0 correspondiente a padding se fuerza a mantenerse en ceros absolutos)*.
+
+$$
+\mathbf{w}_j = \mathbf{e}_j^{behav} + \mathbf{e}_j^{sem}
+$$
+
+*(Nota: El ID 0 correspondiente a padding se fuerza a mantenerse en ceros absolutos)*.
 
 ### 2.3 Bloque de Codificación Transformer Causal
 La secuencia histórica del usuario $S_u = [s_1, s_2, \dots, s_L]$ se convierte a una matriz de embeddings posicionales enriquecidos:
-$$\mathbf{x}_t = \mathbf{w}_{s_t} + \mathbf{p}_t$$
+
+$$
+\mathbf{x}_t = \mathbf{w}_{s_t} + \mathbf{p}_t
+$$
+
 Donde $\mathbf{p}_t$ es una codificación de posición aprendida que representa el orden temporal relativo.
 
 La secuencia $[\mathbf{x}_1, \dots, \mathbf{x}_L]$ pasa a través de un bloque de codificación Transformer:
 *   **Multi-Head Self-Attention Causal**: Se utiliza una máscara booleana de atención causal triangular inferior $M$ para evitar fugas de información futura.
-    $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}} + M\right) V$$
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}} + M\right) V
+$$
+
     Donde la máscara $M_{i, j}$ bloquea cualquier posición $j > i$ (es decir, el paso $i$ solo puede atender a los pasos del pasado $\le i$).
 *   **FFN (Feed-Forward Network)**: Dos capas densas con activación GELU y regularización por Dropout para procesar las representaciones interactivas.
 
@@ -94,7 +120,10 @@ La secuencia $[\mathbf{x}_1, \dots, \mathbf{x}_L]$ pasa a través de un bloque d
 Para predecir el siguiente ítem en la secuencia, tomamos la última salida del codificador Transformer $\mathbf{h}_{last} = \mathbf{h}_L \in \mathbb{R}^{d_{model}}$, que condensa toda la historia secuencial del usuario. 
 
 La puntuación (logit) para cada posible ítem candidato $j$ del catálogo se calcula realizando el **producto punto** entre el estado secuencial y el embedding fusionado del candidato:
-$$\hat{y}_{j} = \mathbf{h}_{last} \cdot \mathbf{w}_j \implies \hat{\mathbf{y}}_u = \mathbf{h}_{last} W^T \in \mathbb{R}^{N_{items}+1}$$
+
+$$
+\hat{y}_{j} = \mathbf{h}_{last} \cdot \mathbf{w}_j \implies \hat{\mathbf{y}}_u = \mathbf{h}_{last} W^T \in \mathbb{R}^{N_{items}+1}
+$$
 
 Esto mapea la similitud geométrica del interés actual del usuario y el contenido colaborativo/semántico de los juegos del catálogo.
 

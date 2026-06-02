@@ -14,32 +14,56 @@ El flujo completo de procesamiento y modelado matemático se detalla a continuac
 
 ### 1. Extracción Semántica Contextualizada (BERT CLS Pooling)
 Dada una descripción o reseña textual $T_i$ para cada ítem $i \in I$, se tokeniza a una secuencia:
-$$[ \text{[CLS]}, t_1, t_2, \dots, t_M, \text{[SEP]} ]$$
+
+$$
+[ \text{[CLS]}, t_1, t_2, \dots, t_M, \text{[SEP]} ]
+$$
+
 Se procesa a través del extractor preentrenado congelado **TFDistilBERT** y se extrae el vector denso del token de clasificación $\text{[CLS]}$ en la última capa oculta:
-$$\mathbf{e}_i^{bert} = H_i[0, 0, :] \in \mathbb{R}^{768}$$
+
+$$
+\mathbf{e}_i^{bert} = H_i[0, 0, :] \in \mathbb{R}^{768}
+$$
+
 Para el ítem de padding (ID `0`), se asigna un vector nulo:
-$$\mathbf{e}_0^{bert} = \mathbf{0} \in \mathbb{R}^{768}$$
+
+$$
+\mathbf{e}_0^{bert} = \mathbf{0} \in \mathbb{R}^{768}
+$$
 
 ### 2. Fusión Comportamental y Semántica
-Para cada ítem $$j$$, sumamos linealmente su embedding comportamental (ID) y la proyección lineal de sus características de BERT:
-$$\mathbf{w}_j = \mathbf{e}_j^{behav} + \left( \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj} \right)$$
+Para cada ítem $j$, sumamos linealmente su embedding comportamental (ID) y la proyección lineal de sus características de BERT:
 
-$$\mathbf{w}_j = \mathbf{e}_j^{behav} + \left( \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj} \right)$$
-Donde $$\mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}$$, $$\mathbf{W}_{proj} \in \mathbb{R}^{768 \times d_{model}}$$ y $$\mathbf{w}_j \in \mathbb{R}^{d_{model}}$$.
+$$
+\mathbf{w}_j = \mathbf{e}_j^{behav} + \left( \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj} \right)
+$$
+
+Donde $\mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}$, $\mathbf{W}_{proj} \in \mathbb{R}^{768 \times d_{model}}$ y $\mathbf{w}_j \in \mathbb{R}^{d_{model}}$.
 
 ### 3. Codificación de Posición
 Para conservar el orden temporal de la secuencia histórica del usuario $S_u = [s_1, s_2, \dots, s_L]$, sumamos una codificación posicional de secuencia autoaprendida:
-$$\mathbf{x}_t = \mathbf{w}_{s_t} + \mathbf{p}_t$$
-Donde $$\mathbf{p}_t \in \mathbb{R}^{d_{model}}$$ es el vector representativo del índice posicional $t$.
+
+$$
+\mathbf{x}_t = \mathbf{w}_{s_t} + \mathbf{p}_t
+$$
+
+Donde $\mathbf{p}_t \in \mathbb{R}^{d_{model}}$ es el vector representativo del índice posicional $t$.
 
 ### 4. Bloques de Atención Causal (Self-Attention)
 Los embeddings posicionales se introducen a un Transformer Encoder con una máscara causal triangular inferior $M$ para evitar fugas de información hacia el futuro (*look-ahead bias*):
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}} + M\right) V$$
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^T}{\sqrt{d_k}} + M\right) V
+$$
+
 Donde $M_{t, t'} = 0$ si $t \ge t'$, de lo contrario $-\infty$.
 
 ### 5. Predicción y Cálculo de Logits
 Para puntuar la probabilidad de consumir cada ítem candidato $j$ en el paso siguiente, se calcula el producto punto entre la última salida secuencial del Transformer $\mathbf{h}_{last} = \mathbf{h}_L$ y las representaciones fusionadas de todos los ítems $W \in \mathbb{R}^{(N_{items}+1) \times d_{model}}$:
-$$\hat{\mathbf{y}}_u = \mathbf{h}_{last} W^T \in \mathbb{R}^{N_{items}+1}$$
+
+$$
+\hat{\mathbf{y}}_u = \mathbf{h}_{last} W^T \in \mathbb{R}^{N_{items}+1}
+$$
 
 ---
 
