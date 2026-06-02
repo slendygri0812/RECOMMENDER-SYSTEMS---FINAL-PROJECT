@@ -82,7 +82,7 @@ $$
 
 ### 2.2 Fusión Comportamental-Semántica
 Para un ítem dado $j$, su representación final fusionada $\mathbf{w}_j$ une dos fuentes de información:
-1.  **Embedding de Comportamiento (`behavioral_emb`)**: Representación de ID clásica que aprende patrones colaborativos puros: $\mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}$.
+1.  **Embedding de Comportamiento (`behavioral_emb`)**: Representación de ID clásica que aprende patrones colaborativos puros: $\mathbf{e}\_j^{behav} \in \mathbb{R}^{d\_{model}}$.
 2.  **Proyección Semántica (`semantic_projection`)**: Una capa lineal densa proyecta el vector de BERT de 768 dimensiones a la dimensión oculta del modelo ($d_{model}$):
 
 $$
@@ -98,7 +98,7 @@ $$
 *(Nota: El ID 0 correspondiente a padding se fuerza a mantenerse en ceros absolutos)*.
 
 ### 2.3 Bloque de Codificación Transformer Causal
-La secuencia histórica del usuario $S_u = [s_1, s_2, \dots, s_L]$ se convierte a una matriz de embeddings posicionales enriquecidos:
+La secuencia histórica del usuario $S\_u = [s\_1, s\_2, \dots, s\_L]$ se convierte a una matriz de embeddings posicionales enriquecidos:
 
 $$
 \mathbf{x}_t = \mathbf{w}_{s_t} + \mathbf{p}_t
@@ -117,7 +117,7 @@ $$
 *   **FFN (Feed-Forward Network)**: Dos capas densas con activación GELU y regularización por Dropout para procesar las representaciones interactivas.
 
 ### 2.4 Capa de Predicción y Producto Punto
-Para predecir el siguiente ítem en la secuencia, tomamos la última salida del codificador Transformer $\mathbf{h}_{last} = \mathbf{h}_L \in \mathbb{R}^{d_{model}}$, que condensa toda la historia secuencial del usuario. 
+Para predecir el siguiente ítem en la secuencia, tomamos la última salida del codificador Transformer $\mathbf{h}\_{last} = \mathbf{h}\_L \in \mathbb{R}^{d\_{model}}$, que condensa toda la historia secuencial del usuario. 
 
 La puntuación (logit) para cada posible ítem candidato $j$ del catálogo se calcula realizando el **producto punto** entre el estado secuencial y el embedding fusionado del candidato:
 

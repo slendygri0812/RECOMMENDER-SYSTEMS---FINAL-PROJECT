@@ -38,7 +38,9 @@ $$
 \mathbf{w}_j = \mathbf{e}_j^{behav} + \left( \mathbf{e}_j^{bert} \mathbf{W}_{proj} + \mathbf{b}_{proj} \right)
 $$
 
-Donde $\mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}$, $\mathbf{W}_{proj} \in \mathbb{R}^{768 \times d_{model}}$ y $\mathbf{w}_j \in \mathbb{R}^{d_{model}}$.
+$$
+\text{Donde } \mathbf{e}_j^{behav} \in \mathbb{R}^{d_{model}}, \quad \mathbf{W}_{proj} \in \mathbb{R}^{768 \times d_{model}} \quad \text{ y } \quad \mathbf{w}_j \in \mathbb{R}^{d_{model}}
+$$
 
 ### 3. Codificación de Posición
 Para conservar el orden temporal de la secuencia histórica del usuario $S_u = [s_1, s_2, \dots, s_L]$, sumamos una codificación posicional de secuencia autoaprendida:
@@ -47,7 +49,9 @@ $$
 \mathbf{x}_t = \mathbf{w}_{s_t} + \mathbf{p}_t
 $$
 
-Donde $\mathbf{p}_t \in \mathbb{R}^{d_{model}}$ es el vector representativo del índice posicional $t$.
+$$
+\text{Donde } \mathbf{p}_t \in \mathbb{R}^{d_{model}} \text{ es el vector representativo del índice posicional } t.
+$$
 
 ### 4. Bloques de Atención Causal (Self-Attention)
 Los embeddings posicionales se introducen a un Transformer Encoder con una máscara causal triangular inferior $M$ para evitar fugas de información hacia el futuro (*look-ahead bias*):
