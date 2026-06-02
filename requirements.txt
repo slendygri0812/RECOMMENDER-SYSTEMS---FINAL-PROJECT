@@ -1,0 +1,5 @@
+tensorflow
+transformers
+pandas
+scikit-learn
+tqdm
