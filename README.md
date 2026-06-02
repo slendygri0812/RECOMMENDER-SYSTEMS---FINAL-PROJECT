@@ -20,8 +20,9 @@ $$\mathbf{e}_i^{bert} = H_i[0, 0, :] \in \mathbb{R}^{768}$$
 Para el ítem de padding (ID `0`), se asigna un vector nulo:
 $$\mathbf{e}_0^{bert} = \mathbf{0} \in \mathbb{R}^{768}$$
 
-### 2. Fusión Comportamental y Semántica
-Para cada ítem \(j\), sumamos linealmente su embedding comportamental (ID) y la proyección lineal de sus características de BERT:
+### Fusión Comportamental y Semántica
+ 
+Para cada ítem \(j\), combinamos la representación comportamental aprendida a partir de interacciones con la representación semántica obtenida mediante BERT:
  
 $$
 \mathbf{w}_j
@@ -36,15 +37,13 @@ $$
 \right)
 $$
  
-donde
+donde:
  
-$$
-\mathbf{e}_j^{\text{behav}} \in \mathbb{R}^{d_{\text{model}}},
-\qquad
-\mathbf{W}_{\text{proj}} \in \mathbb{R}^{768 \times d_{\text{model}}},
-\qquad
-\mathbf{w}_j \in \mathbb{R}^{d_{\text{model}}}.
-$$
+- \( \mathbf{e}_j^{\text{behav}} \in \mathbb{R}^{d_{\text{model}}} \) es el embedding comportamental del ítem.
+- \( \mathbf{e}_j^{\text{bert}} \in \mathbb{R}^{768} \) corresponde a las características extraídas por BERT.
+- \( \mathbf{W}_{\text{proj}} \in \mathbb{R}^{768 \times d_{\text{model}}} \) es la matriz de proyección.
+- \( \mathbf{b}_{\text{proj}} \in \mathbb{R}^{d_{\text{model}}} \) es el sesgo de la proyección.
+- \( \mathbf{w}_j \in \mathbb{R}^{d_{\text{model}}} \) es la representación fusionada final del ítem.
 
 ### 3. Codificación de Posición
 Para conservar el orden temporal de la secuencia histórica del usuario $S_u = [s_1, s_2, \dots, s_L]$, sumamos una codificación posicional de secuencia autoaprendida:
