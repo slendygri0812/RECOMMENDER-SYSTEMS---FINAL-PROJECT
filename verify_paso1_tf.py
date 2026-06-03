@@ -14,9 +14,16 @@ df_filtered = load_and_preprocess_data(csv_path, min_interactions=5)
 
 # Verify sequence counts and timestamps
 print("\n--- PASO 1 TensorFlow Verification ---")
-print(f"Number of rows after filtering: {len(df_filtered)}")
-print(f"Number of unique users: {df_filtered['steamid'].nunique()}")
-print(f"Number of unique games: {df_filtered['appid'].nunique()}")
+num_users_filtered = df_filtered['steamid'].nunique()
+num_items_filtered = df_filtered['appid'].nunique()
+num_interactions_filtered = len(df_filtered)
+sparsity_filtered = 1.0 - (num_interactions_filtered / (num_users_filtered * num_items_filtered))
+
+print(f"Number of rows after filtering: {num_interactions_filtered}")
+print(f"Number of unique users: {num_users_filtered}")
+print(f"Number of unique games: {num_items_filtered}")
+print(f"Dataset Density: {((1.0 - sparsity_filtered) * 100):.4f}%")
+print(f"Dataset Sparsity: {(sparsity_filtered * 100):.4f}%")
 
 # Try a sample user sequence
 sample_user = df_filtered['steamid'].iloc[0]

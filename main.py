@@ -44,8 +44,14 @@ def main():
     
     num_users = len(user_to_id)
     num_items = len(item_to_id)
+    num_interactions = len(df_filtered)
+    sparsity = 1.0 - (num_interactions / (num_users * num_items))
+    
     print(f" -> Usuarios activos: {num_users}")
     print(f" -> Ítems únicos (juegos): {num_items}")
+    print(f" -> Total de interacciones: {num_interactions}")
+    print(f" -> Densidad del dataset: {(1.0 - sparsity) * 100:.4f}%")
+    print(f" -> Sparsity (Dispersión): {sparsity * 100:.4f}%")
     
     # Generar secuencias y datasets
     max_len = 10
@@ -77,11 +83,11 @@ def main():
         print(f" -> Embeddings guardados en caché: '{cache_path}'")
         
     # --- PASO 3 y 4: Definición y Entrenamiento de Modelos ---
-    d_model = 128
+    d_model = 256
     num_heads = 2
     num_layers = 2
     dropout = 0.2
-    epochs = 50
+    epochs = 20
     
     # 1. Modelo Baseline (SASRec puro sin BERT)
     print("\n=========================================================================")
@@ -101,7 +107,7 @@ def main():
         train_dataset=train_dataset,
         val_dataset=val_dataset,
         epochs=epochs,
-        lr=0.005,
+        lr=0.0005,
         verbose=True,
         model_name="baseline"
     )
@@ -125,7 +131,7 @@ def main():
         train_dataset=train_dataset,
         val_dataset=val_dataset,
         epochs=epochs,
-        lr=0.001,
+        lr=0.0005,
         verbose=True,
         model_name="hbest"
     )
