@@ -150,16 +150,25 @@ El **Leave-One-Out Time-Based Split** replica con exactitud la línea temporal r
 
 ## 📊 4. Resultados del Experimento y Comparación Métrica
 
-Los modelos se entrenaron por 15 épocas bajo el dataset de reseñas de Steam (1,172 usuarios altamente activos y 343 juegos exclusivos). Las métricas obtenidas tras la evaluación final del conjunto de test son las siguientes:
+Los modelos se entrenaron por 20 épocas utilizando una sintonización de hiperparámetros optimizada (`d_model = 256`, `num_layers = 2`, `learning_rate = 0.0005`, `dropout = 0.2`) sobre el dataset de reseñas de Steam (1,172 usuarios altamente activos, 343 juegos exclusivos y una dispersión de **97.43%**). Las métricas obtenidas tras la evaluación final sobre el conjunto de test son las siguientes:
 
 | Métrica | Baseline (SASRec puro) | H-BEST (BERT Fusión) | Diferencia |
 | :--- | :---: | :---: | :---: |
-| **HR@5** | 0.2304 | 0.2167 | -0.0137 |
-| **HR@10** | 0.2961 | **0.2969** | **+0.0009** |
-| **NDCG@5** | 0.1600 | 0.1487 | -0.0113 |
-| **NDCG@10** | 0.1812 | 0.1745 | -0.0067 |
+| **Accuracy** | 0.1092 | **0.1101** | **+0.0009** |
+| **HR@5** | 0.1954 | **0.2210** | **+0.0256** |
+| **HR@10** | 0.2577 | **0.2807** | **+0.0230** |
+| **NDCG@5** | 0.1537 | **0.1678** | **+0.0141** |
+| **NDCG@10** | 0.1737 | **0.1870** | **+0.0133** |
+| **Precision@5** | 0.0391 | **0.0442** | **+0.0051** |
+| **Precision@10** | 0.0258 | **0.0281** | **+0.0023** |
+| **Recall@5** | 0.1954 | **0.2210** | **+0.0256** |
+| **Recall@10** | 0.2577 | **0.2807** | **+0.0230** |
 
 ### 4.1 Análisis Técnico de los Resultados
-*   **Hit Rate @ 10 (HR@10)**: El modelo **H-BEST supera al Baseline** (29.69% vs 29.61%). Esto demuestra que inyectar el contexto de reseñas textuales de DistilBERT ayuda a ensanchar el espectro del ranking, permitiendo al Transformer recomendar ítems que son conceptualmente similares a los de la sesión aunque no compartan correlaciones de ID puras.
-*   **HR@5 y NDCG@5**: El Baseline (SASRec) mantiene una ligera superioridad en rangos muy cortos. Esto ocurre debido a que el catálogo de ítems es pequeño (únicamente 343 juegos). Con un catálogo reducido, los embeddings comportamentales de IDs puros logran memorizar correlaciones directas de co-ocurrencia muy fuertes que dominan las primeras posiciones de la recomendación.
-*   **Ventaja del H-BEST**: H-BEST destaca al atenuar el problema de *cold-start* (arranque en frío) de ítems y al expandir el alcance de la recomendación en listas más amplias (Top-10), donde las representaciones semánticas enriquecidas suavizan el sobreajuste (*overfitting*) que sufren los IDs puros.
+
+*   **Superioridad Consistente:** Bajo la configuración de alta capacidad (`d_model = 256`, `num_layers = 2`), el modelo **H-BEST supera al Baseline (SASRec puro) en el 100% de las métricas de evaluación**. Esto confirma empíricamente el valor de la inyección de información semántica estructurada en recomendadores secuenciales.
+*   **Capacidad de Acierto (Hit Rate y Recall):** H-BEST muestra una ganancia absoluta muy marcada en el top de la recomendación, con una diferencia de **+2.56%** en HR@5 (22.10% vs 19.54%) y **+2.30%** en HR@10 (28.07% vs 25.77%). El modelo híbrido logra encontrar juegos idóneos que el baseline colaborativo descarta por falta de historial directo de transiciones de ID.
+*   **Calidad de la Ordenación (NDCG):** Las métricas NDCG@5 (+0.0141) y NDCG@10 (+0.0133) demuestran que H-BEST coloca los ítems correctos en posiciones más relevantes (más arriba en el ranking temporal). La inyección semántica de BERT suaviza el espacio latente del Transformer, permitiendo discriminar mejor entre ítems de co-ocurrencia similar pero con descripciones cualitativamente diferentes.
+*   **Atenuación del Overfitting en Alta Capacidad:** Con un catálogo pequeño (343 juegos) y un alto sparsity (97.43%), un Transformer puro grande (d_model=256, 2 capas) tiende a sobreajustar los IDs del catálogo. H-BEST actúa como un **regularizador semántico potente**: al proyectar los embeddings de reseñas de DistilBERT (congelados y generales), ancla el aprendizaje del Transformer en similitudes textuales generales del mundo real, mejorando sustancialmente la capacidad de generalización en test.
+*   **Impacto de los Hiperparámetros:** El ajuste a un espacio latente de 256 y un learning rate más bajo (0.0005) facilitó que las representaciones fusionadas de H-BEST se alinearan geométricamente con el interés secuencial del usuario, permitiendo que la similitud de producto punto capture de manera óptima las necesidades del usuario en producción.
+
