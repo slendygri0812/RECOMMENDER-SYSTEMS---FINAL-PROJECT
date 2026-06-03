@@ -886,6 +886,31 @@
                 </div>
             </div>
 
+            <!-- Curvas de Aprendizaje y Métricas de Validación -->
+            <div class="card" style="margin-top: 2rem; margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-chart-line"></i> Curvas de Aprendizaje (Pérdidas y Métricas por Época)</h2>
+                    <!-- Toggle de Curvas del Modelo -->
+                    <div style="display: flex; gap: 0.5rem; background: var(--border-color); padding: 0.25rem; border-radius: 30px; border: 1px solid var(--border-color);">
+                        <button class="tab-btn active" id="btn-curve-hbest" onclick="showModelCurves('hbest')" style="padding: 0.4rem 1rem; font-size: 0.85rem; border-radius: 30px;">H-BEST</button>
+                        <button class="tab-btn" id="btn-curve-baseline" onclick="showModelCurves('baseline')" style="padding: 0.4rem 1rem; font-size: 0.85rem; border-radius: 30px;">Baseline (SASRec)</button>
+                    </div>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Evolución de la función de pérdida de entropía cruzada secuencial (Entrenamiento vs. Validación) y métricas de validación por época a lo largo de las 20 épocas de entrenamiento.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="text-align: center;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--accent-primary);">Curva de Pérdida (Loss Curve)</h4>
+                        <img id="img-loss-curve" src="plots_hbest/loss_curves.png" alt="Curva de Pérdida H-BEST" style="width: 100%; max-width: 550px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px var(--shadow-intensity);">
+                    </div>
+                    <div style="text-align: center;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--accent-secondary);">Métricas de Validación por Época</h4>
+                        <img id="img-metrics-curve" src="plots_hbest/metrics_curves.png" alt="Métricas de Validación H-BEST" style="width: 100%; max-width: 550px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 15px var(--shadow-intensity);">
+                    </div>
+                </div>
+            </div>
+
             <!-- Notas de Análisis -->
             <div class="card">
                 <div class="card-header">
@@ -1094,6 +1119,26 @@
                     fill.style.width = `${targetWidth}%`;
                 }, 100);
             });
+        }
+
+        // TOGGLE LEARNING CURVES
+        function showModelCurves(modelType) {
+            const lossImg = document.getElementById('img-loss-curve');
+            const metricsImg = document.getElementById('img-metrics-curve');
+            const btnHbest = document.getElementById('btn-curve-hbest');
+            const btnBaseline = document.getElementById('btn-curve-baseline');
+            
+            if (modelType === 'hbest') {
+                lossImg.src = 'plots_hbest/loss_curves.png';
+                metricsImg.src = 'plots_hbest/metrics_curves.png';
+                btnHbest.classList.add('active');
+                btnBaseline.classList.remove('active');
+            } else {
+                lossImg.src = 'plots_baseline/loss_curves.png';
+                metricsImg.src = 'plots_baseline/metrics_curves.png';
+                btnHbest.classList.remove('active');
+                btnBaseline.classList.add('active');
+            }
         }
 
         // SIMULATION DEMO POPULATOR

@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard interactivo de la arquitectura de la red neuronal H-BEST y comparación con SASRec.">
+    <title>H-BEST | Arquitectura y Estructura de la Red Neuronal</title>
+    
+    <!-- Google Fonts: Outfit y JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- KaTeX para visualización de ecuaciones matemáticas perfectas offline/online -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070a13;
+            --bg-gradient: linear-gradient(135deg, #070a13 0%, #0d111d 50%, #17153b 100%);
+            --glass-bg: rgba(13, 17, 29, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-glow: rgba(139, 92, 246, 0.25);
+            --accent-glow-cyan: rgba(6, 182, 212, 0.2);
+            --card-radius: 20px;
+            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header-title h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #a78bfa, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            transition: var(--transition-smooth);
+        }
+
+        .back-link:hover {
+            color: var(--accent-purple);
+        }
+
+        /* DUAL LAYOUT: Left visual architecture, Right details */
+        .architecture-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .architecture-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CARD STYLING */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--card-radius);
+            padding: 2rem;
+            box-shadow: 0 12px 40px var(--shadow);
+            backdrop-filter: blur(12px);
+            transition: var(--transition-smooth);
+        }
+
+        /* INTERACTIVE ARCHITECTURE DIAGRAM */
+        .architecture-viewer {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .model-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            padding: 0.4rem;
+            border-radius: 30px;
+            border: 1px solid var(--glass-border);
+            width: max-content;
+        }
+
+        .model-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.6rem 1.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .model-btn.active {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #6366f1 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+        }
+
+        /* LAYER NODES */
+        .layers-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            position: relative;
+        }
+
+        .layer-node {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 1.25rem;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition-smooth);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .layer-node:hover {
+            background: rgba(139, 92, 246, 0.03);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: scale(1.01);
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.05);
+        }
+
+        .layer-node.active {
+            border-color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.05);
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+
+        .layer-node.cyan.active {
+            border-color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.05);
+            box-shadow: 0 0 25px var(--accent-glow-cyan);
+        }
+
+        .layer-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .layer-badge-num {
+            background: var(--glass-border);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .layer-node.active .layer-badge-num {
+            background: var(--accent-purple);
+            color: white;
+        }
+
+        .layer-node.cyan.active .layer-badge-num {
+            background: var(--accent-cyan);
+            color: white;
+        }
+
+        .layer-title h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+        }
+
+        .layer-title p {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+
+        .tensor-shape {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.08);
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            padding: 0.35rem 0.7rem;
+            border-radius: 8px;
+        }
+
+        .layer-connection-arrow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: -0.5rem 0;
+            opacity: 0.6;
+        }
+
+        /* INACTIVE / GRAYED OUT FOR BASELINE */
+        .layer-node.inactive-baseline {
+            opacity: 0.25;
+            filter: grayscale(1);
+            pointer-events: none;
+        }
+
+        /* RIGHT PANEL STYLING */
+        .details-viewer {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .section-header {
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .math-block {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        /* PLAYGROUND PARAMETERS */
+        .playground-slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .playground-slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .playground-slider-label span:last-child {
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: var(--glass-border);
+            border-radius: 8px;
+            outline: none;
+            accent-color: var(--accent-purple);
+        }
+
+        .shapes-calc-panel {
+            background: rgba(6, 182, 212, 0.03);
+            border: 1px solid rgba(6, 182, 212, 0.15);
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .shapes-calc-panel h3 {
+            font-size: 1rem;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+        }
+
+        .calc-row:last-child {
+            border-bottom: none;
+        }
+
+        .calc-row span:last-child {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+        }
+
+        /* CODE SNIPPET EXPLORER */
+        .code-explorer {
+            margin-top: 1rem;
+            background: #090c15;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            overflow-x: auto;
+            max-height: 250px;
+        }
+
+        .code-explorer pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #38bdf8;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-title">
+                <h1>Estructura de la Red Neuronal</h1>
+                <p>Explorador interactivo de tensores, ecuaciones de capas y flujos de H-BEST vs SASRec</p>
+            </div>
+            <a href="dashboard.html" class="back-link">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="architecture-layout">
+            
+            <!-- COLUMNA IZQUIERDA: VISUALIZADOR DE CAPAS -->
+            <div class="card architecture-viewer">
+                <div class="card-header" style="border: none; padding: 0; margin-bottom: 1rem;">
+                    <h2>Visualizador del Flujo Delantero (Forward Pass)</h2>
+                </div>
+                
+                <!-- Selector de Modelo -->
+                <div class="model-selector">
+                    <button class="model-btn active" id="btn-hbest" onclick="toggleModel('hbest')">H-BEST (Híbrido Semántico)</button>
+                    <button class="model-btn" id="btn-sasrec" onclick="toggleModel('sasrec')">Baseline (SASRec puro)</button>
+                </div>
+
+                <!-- Capas Apiladas -->
+                <div class="layers-stack">
+                    
+                    <!-- 1. Input Layer -->
+                    <div class="layer-node active" id="layer-input" onclick="selectLayer('input')">
+                        <div class="layer-meta">
+                            <div class="layer-badge-num">1</div>
+                            <div class="layer-title">
+                                <h3>Input Sequence Layer</h3>
+                                <p>Secuencia histórica del usuario</p>
+                            </div>
+                        </div>
+                        <div class="tensor-shape" id="shape-input">[Batch, Seq_Len]</div>
+                    </div>
+                    
+                    <div class="layer-connection-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                    <!-- 2. Embedding ID (Collaborative) -->
+                    <div class="layer-node" id="layer-behav" onclick="selectLayer('behav')">
+                        <div class="layer-meta">
+                            <div class="layer-badge-num">2</div>
+                            <div class="layer-title">
+                                <h3>Behavioral Embeddings (ID)</h3>
+                                <p>Representación latente colaborativa</p>
+                            </div>
+                        </div>
+                        <div class="tensor-shape" id="shape-behav">[Batch, Seq_Len, d_model]</div>
+                    </div>
+
+                    <div class="layer-connection-arrow hbest-only"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                    <!-- 3. Semantic Projection (DistilBERT) -->
+                    <div class="layer-node cyan hbest-only" id="layer-sem" onclick="selectLayer('sem')">
+                        <div class="layer-meta">
+                            <div class="layer-badge-num">3</div>
+                            <div class="layer-title">
+                                <h3>Semantic Projection Layer</h3>
+                                <p>Proyección del vector DistilBERT CLS de 768d</p>
+                            </div>
+                        </div>
+                        <div class="tensor-shape" id="shape-sem">[Batch, Seq_Len, d_model]</div>
+                    </div>
+
+                    <div class="layer-connection-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                    <!-- 4. Embedding Fusion / Sum -->
+                    <div class="layer-node" id="layer-fusion" onclick="selectLayer('fusion')">
+                        <div class="layer-meta">
+                            <div class="layer-badge-num" id="num-fusion">4</div>
+                            <div class="layer-title">
+                                <h3>Embedding Sum / Positional Addition</h3>
+                                <p id="text-fusion">Fusión de representaciones + Codificación posicional</p>
+                            </div>
+                        </div>
+                        <div class="tensor-shape" id="shape-fusion">[Batch, Seq_Len, d_model]</div>
+                    </div>
+
+                    <div class="layer-connection-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                    <!-- 5. Transformer Causal Blocks -->
+                    <div class="layer-node" id="layer-transformer" onclick="selectLayer('transformer')">
+                        <div class="layer-meta">
+                            <div class="layer-badge-num" id="num-transformer">5</div>
+                            <div class="layer-title">
+                                <h3>Causal Transformer Encoder</h3>
+                                <p>Auto-Atención Multi-Cabeza con máscara causal</p>
+                            </div>
+                        </div>
+                        <div class="tensor-shape" id="shape-transformer">[Batch, Seq_Len, d_model]</div>
+                    </div>
+
+                    <div class="layer-connection-arrow"><i class="fa-solid fa-arrow-down-long"></i></div>
+
+                    <!-- 6. Prediction Layer -->
+                    <div class="layer-node" id="layer-prediction" onclick="selectLayer('prediction')">
+                        <div class="layer-meta">
+                            <div class="layer-badge-num" id="num-prediction">6</div>
+                            <div class="layer-title">
+                                <h3>Logits Prediction Layer</h3>
+                                <p>Producto punto de h_last y matriz W</p>
+                            </div>
+                        </div>
+                        <div class="tensor-shape" id="shape-prediction">[Batch, Num_Items + 1]</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: EXPLICACIÓN DE CAPAS Y PLAYGROUND -->
+            <div class="card details-viewer">
+                
+                <!-- Sección 1: Explicación e Ecuación -->
+                <div class="section-header">
+                    <h2 id="details-layer-title">Input Sequence Layer</h2>
+                </div>
+                
+                <div style="line-height: 1.6;">
+                    <p id="details-layer-desc">
+                        Representa el historial cronológico de compras o interacciones de un usuario con los juegos. Los IDs de juegos se introducen como enteros secuenciales indexados. Se reserva el ID 0 estrictamente para representar el padding (relleno) cuando la secuencia es más corta que la longitud máxima requerida.
+                    </p>
+                </div>
+
+                <!-- Bloque Matemático con KaTeX -->
+                <div class="math-block" id="math-container">
+                    <!-- KaTeX formula loaded here -->
+                </div>
+
+                <!-- Campo de Configuración de Tensores / Código de la capa -->
+                <div class="section-header" style="margin-top: 1rem;">
+                    <h2>Implementación en Código (`model.py`)</h2>
+                </div>
+                <div class="code-explorer" id="code-container">
+                    <!-- Loaded dynamically -->
+                </div>
+
+                <!-- Sección 2: Hyperparameters Shapes Playground -->
+                <div class="section-header" style="margin-top: 1rem;">
+                    <h2>Playground Dinámico de Dimensiones</h2>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">
+                    Ajusta los hiperparámetros deslizantes para observar cómo se recalculan los tensores y parámetros en tiempo real en los bloques del modelo.
+                </p>
+
+                <div class="playground-sliders">
+                    <!-- d_model -->
+                    <div class="playground-slider-group">
+                        <div class="playground-slider-label">
+                            <span>Dimensión del Modelo (d_model)</span>
+                            <span id="label-dmodel">256</span>
+                        </div>
+                        <input type="range" id="slider-dmodel" min="32" max="512" step="32" value="256" oninput="updatePlayground()">
+                    </div>
+
+                    <!-- seq_len / max_len -->
+                    <div class="playground-slider-group">
+                        <div class="playground-slider-label">
+                            <span>Longitud de la Secuencia (Seq_Len)</span>
+                            <span id="label-seqlen">10</span>
+                        </div>
+                        <input type="range" id="slider-seqlen" min="5" max="50" step="5" value="10" oninput="updatePlayground()">
+                    </div>
+
+                    <!-- num_items -->
+                    <div class="playground-slider-group">
+                        <div class="playground-slider-label">
+                            <span>Items en Catálogo (Num_Items)</span>
+                            <span id="label-items">343</span>
+                        </div>
+                        <input type="range" id="slider-items" min="100" max="1000" step="10" value="343" oninput="updatePlayground()">
+                    </div>
+
+                    <!-- batch_size -->
+                    <div class="playground-slider-group">
+                        <div class="playground-slider-label">
+                            <span>Tamaño de Lote (Batch)</span>
+                            <span id="label-batch">32</span>
+                        </div>
+                        <input type="range" id="slider-batch" min="8" max="128" step="8" value="32" oninput="updatePlayground()">
+                    </div>
+                </div>
+
+                <!-- Panel de Cálculos de Dimensiones Recalculadas -->
+                <div class="shapes-calc-panel">
+                    <h3>Dimensiones del Tensor en Capa Seleccionada</h3>
+                    <div class="calc-row">
+                        <span>Nombre de la Capa:</span>
+                        <span id="calc-layer-name">Input Layer</span>
+                    </div>
+                    <div class="calc-row">
+                        <span>Forma del Tensor de Entrada:</span>
+                        <span id="calc-input-shape">(32, 10)</span>
+                    </div>
+                    <div class="calc-row">
+                        <span>Forma del Tensor de Salida:</span>
+                        <span id="calc-output-shape">(32, 10)</span>
+                    </div>
+                    <div class="calc-row">
+                        <span>Parámetros Entrenables Estimados:</span>
+                        <span id="calc-params" style="color: var(--accent-cyan);">0</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- CODE SNIPPET DB & PLAYGROUND CONTROLLER JS -->
+    <script>
+        let currentModel = 'hbest';
+        let currentLayer = 'input';
+
+        // STATIC PARAMETERS
+        let d_model = 256;
+        let seq_len = 10;
+        let num_items = 343;
+        let batch_size = 32;
+
+        // LAYER DETAILS DB
+        const layerDetails = {
+            input: {
+                title: "Input Sequence Layer",
+                desc: "Representa la secuencia de entrada ordenada temporalmente del historial de interacciones de un usuario. Los IDs de juegos se leen como enteros mapeados. El token 0 está reservado en exclusiva para padding (relleno) en secuencias más cortas que el máximo permitido.",
+                formula: "S_u = [s_1, s_2, ..., s_L] \\quad \\text{donde } s_i \\in \\{0, 1, ..., N_{items}\\}",
+                code: `# En model.py:
+def call(self, seq_ids, training=None):
+    # seq_ids es el tensor de entrada
+    batch_size = tf.shape(seq_ids)[0]
+    seq_len = tf.shape(seq_ids)[1]
+    ...`,
+                calcInput: () => `(Batch, Seq_Len)`,
+                calcOutput: () => `(Batch, Seq_Len)`,
+                calcParams: () => 0
+            },
+            behav: {
+                title: "Behavioral Embeddings (ID)",
+                desc: "Capa de Embeddings clásica de Keras/TensorFlow. Mapea secuencialmente cada ID de ítem del catálogo a un vector representativo denso y entrenable de dimensión d_model. Captura las relaciones directas colaborativas e interacciones del comportamiento del usuario.",
+                formula: "\\mathbf{e}_j^{behav} = \\text{Embedding}(j) \\in \\mathbb{R}^{d_{model}}",
+                code: `# En model.py:
+self.behavioral_emb = tf.keras.layers.Embedding(
+    input_dim=num_items + 1,
+    output_dim=d_model,
+    embeddings_initializer='glorot_uniform',
+    name='behavioral_embedding'
+)`,
+                calcInput: () => `(Batch, Seq_Len)`,
+                calcOutput: () => `(Batch, Seq_Len, d_model)`,
+                calcParams: () => (num_items + 1) * d_model
+            },
+            sem: {
+                title: "Semantic Projection Layer (BERT)",
+                desc: "Exclusivo de H-BEST. Recibe los embeddings preentrenados y congelados de DistilBERT (de 768 dimensiones ocultas del token CLS de las reseñas textuales de los juegos) y los proyecta linealmente a la dimensionalidad interna del modelo (d_model). Esto inyecta conocimiento semántico al espacio de atención del recomendador.",
+                formula: "\\mathbf{e}_j^{sem} = \\mathbf{e}_j^{bert} \\mathbf{W}_{proj} + \\mathbf{b}_{proj} \\in \\mathbb{R}^{d_{model}}",
+                code: `# En model.py:
+self.bert_embeddings = tf.constant(bert_embeddings, dtype=tf.float32)
+self.semantic_projection = tf.keras.layers.Dense(
+    units=d_model,
+    activation=None,
+    kernel_initializer='glorot_uniform',
+    name='semantic_projection'
+)`,
+                calcInput: () => `(Batch, Seq_Len, 768)`,
+                calcOutput: () => `(Batch, Seq_Len, d_model)`,
+                calcParams: () => (768 * d_model) + d_model
+            },
+            fusion: {
+                title: "Embedding Fusion & Positional Addition",
+                hbestDesc: "Suma linealmente los embeddings colaborativos (IDs) y proyectados (semánticos de BERT) para crear la representación interactiva de los juegos. A esta fusión se le añade un embedding posicional autoaprendido para codificar el orden temporal antes de entrar a la atención.",
+                sasrecDesc: "En el baseline SASRec, la fusión de BERT no existe. La secuencia de embeddings de ID se suma directamente con los embeddings posicionales aprendidos para representar la posición temporal de cada juego.",
+                hbestFormula: "\\mathbf{x}_t = \\left(\\mathbf{e}_{s_t}^{behav} + \\mathbf{e}_{s_t}^{sem}\\right) + \\mathbf{p}_t \\in \\mathbb{R}^{d_{model}}",
+                sasrecFormula: "\\mathbf{x}_t = \\mathbf{e}_{s_t}^{behav} + \\mathbf{p}_t \\in \\mathbb{R}^{d_{model}}",
+                code: `# En model.py:
+all_fused = self._get_fused_item_embeddings() # Fusión BERT + ID (Solo H-BEST)
+seq_embeddings = tf.gather(all_fused, seq_ids)
+pos_embeddings = self.pos_emb(positions)       # Embedding posicional
+x = seq_embeddings + pos_embeddings`,
+                calcInput: () => `(Batch, Seq_Len, d_model)`,
+                calcOutput: () => `(Batch, Seq_Len, d_model)`,
+                calcParams: () => seq_len * d_model // Nota: Embedding posicional
+            },
+            transformer: {
+                title: "Causal Transformer Encoder Blocks",
+                desc: "Aplica N bloques consecutivos de Multi-Head Self-Attention causal. Utiliza una máscara triangular inferior para impedir que las consultas del paso t atiendan a claves del futuro (t+k), eliminando la fuga de datos temporales. Cuenta con conexiones residuales, normalización de capas y capas Feed Forward.",
+                formula: "\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}} + M\\right)V",
+                code: `# Capa personalizada TransformerEncoderBlock en model.py:
+def call(self, x, mask=None, training=None):
+    attn_output = self.mha(query=x, value=x, key=x, attention_mask=mask, training=training)
+    attn_output = self.dropout1(attn_output, training=training)
+    out1 = self.layernorm1(x + attn_output)
+    ffn_output = self.ffn(out1, training=training)
+    return self.layernorm2(out1 + ffn_output)`,
+                calcInput: () => `(Batch, Seq_Len, d_model)`,
+                calcOutput: () => `(Batch, Seq_Len, d_model)`,
+                calcParams: () => {
+                    // MHA: 4 * d_model * d_model (projections Q, K, V, O)
+                    // FFN: d_model * 4d_model (Dense 1) + 4d_model * d_model (Dense 2) + biases
+                    // LayerNorms: 4 * d_model
+                    const mhaParams = 4 * d_model * d_model;
+                    const ffnParams = d_model * (d_model * 4) + (d_model * 4) * d_model + (d_model * 5);
+                    const lnParams = 4 * d_model;
+                    return (mhaParams + ffnParams + lnParams) * 2; // Asumiendo 2 bloques
+                }
+            },
+            prediction: {
+                title: "Logits Prediction Layer",
+                desc: "Calcula las puntuaciones brutas (logits) de recomendación para todos los ítems candidatos del catálogo. Toma el vector representativo secuencial condensado final de la secuencia (h_last) y realiza una multiplicación de matrices (producto punto) contra la matriz completa W de embeddings del catálogo.",
+                formula: "\\hat{\\mathbf{y}}_u = \\mathbf{h}_{last} W^T \\in \\mathbb{R}^{N_{items} + 1}",
+                code: `# En model.py:
+def predict_logits(self, seq_ids):
+    h = self.call(seq_ids, training=False)
+    h_last = h[:, -1, :] # Último vector temporal: (Batch, d_model)
+    all_fused = self._get_fused_item_embeddings() # (num_items + 1, d_model)
+    logits = tf.matmul(h_last, all_fused, transpose_b=True)
+    return logits`,
+                calcInput: () => `(Batch, d_model) \\text{ y } (Num\\_Items + 1, d_model)`,
+                calcOutput: () => `(Batch, Num\\_Items + 1)`,
+                calcParams: () => 0 // Sin parámetros adicionales, reutiliza la matriz W
+            }
+        };
+
+        // RENDER LAYER DETAILS
+        function selectLayer(layerId) {
+            currentLayer = layerId;
+            
+            // Deactivate all layer nodes
+            document.querySelectorAll('.layer-node').forEach(node => {
+                node.classList.remove('active');
+            });
+            // Activate selected node
+            document.getElementById(`layer-${layerId}`).classList.add('active');
+
+            const info = layerDetails[layerId];
+
+            // Render Title & Desc
+            document.getElementById('details-layer-title').innerText = info.title;
+            if (layerId === 'fusion') {
+                document.getElementById('details-layer-desc').innerText = currentModel === 'hbest' ? info.hbestDesc : info.sasrecDesc;
+            } else {
+                document.getElementById('details-layer-desc').innerText = info.desc;
+            }
+
+            // Render Math Formula with KaTeX
+            const mathContainer = document.getElementById('math-container');
+            let formulaStr = info.formula;
+            if (layerId === 'fusion') {
+                formulaStr = currentModel === 'hbest' ? info.hbestFormula : info.sasrecFormula;
+            }
+            katex.render(formulaStr, mathContainer, {
+                throwOnError: false,
+                displayMode: true
+            });
+
+            // Render Code snippet
+            document.getElementById('code-container').innerHTML = `<pre><code>${escapeHtml(info.code)}</code></pre>`;
+
+            // Update Playground metrics for this layer
+            updatePlayground();
+        }
+
+        // TOGGLE ARCHITECTURE MODEL
+        function toggleModel(modelType) {
+            currentModel = modelType;
+            
+            // Toggle active classes on buttons
+            document.getElementById('btn-hbest').classList.toggle('active', modelType === 'hbest');
+            document.getElementById('btn-sasrec').classList.toggle('active', modelType === 'sasrec');
+
+            // Hide/Show semantic node and arrows
+            const semNode = document.getElementById('layer-sem');
+            const arrows = document.querySelectorAll('.hbest-only');
+            
+            if (modelType === 'sasrec') {
+                semNode.classList.add('inactive-baseline');
+                arrows.forEach(arrow => arrow.style.display = 'none');
+                
+                // Adjust numbering badges on baseline
+                document.getElementById('num-fusion').innerText = '3';
+                document.getElementById('text-fusion').innerText = 'Positional Addition';
+                document.getElementById('num-transformer').innerText = '4';
+                document.getElementById('num-prediction').innerText = '5';
+                
+                // If the user had semantic selected, redirect them to input layer
+                if (currentLayer === 'sem') {
+                    selectLayer('input');
+                }
+            } else {
+                semNode.classList.remove('inactive-baseline');
+                arrows.forEach(arrow => arrow.style.display = 'flex');
+                
+                document.getElementById('num-fusion').innerText = '4';
+                document.getElementById('text-fusion').innerText = 'Fusión de representaciones + Codificación posicional';
+                document.getElementById('num-transformer').innerText = '5';
+                document.getElementById('num-prediction').innerText = '6';
+            }
+
+            // Refresh current selected layer info (especially fusion formula)
+            selectLayer(currentLayer);
+        }
+
+        // UPDATE PLAYGROUND METRICS
+        function updatePlayground() {
+            // Read values from sliders
+            d_model = parseInt(document.getElementById('slider-dmodel').value);
+            seq_len = parseInt(document.getElementById('slider-seqlen').value);
+            num_items = parseInt(document.getElementById('slider-items').value);
+            batch_size = parseInt(document.getElementById('slider-batch').value);
+
+            // Update text labels
+            document.getElementById('label-dmodel').innerText = d_model;
+            document.getElementById('label-seqlen').innerText = seq_len;
+            document.getElementById('label-items').innerText = num_items;
+            document.getElementById('label-batch').innerText = batch_size;
+
+            // Recalculate node shapes labels
+            document.getElementById('shape-input').innerText = `[${batch_size}, ${seq_len}]`;
+            document.getElementById('shape-behav').innerText = `[${batch_size}, ${seq_len}, ${d_model}]`;
+            if (document.getElementById('shape-sem')) {
+                document.getElementById('shape-sem').innerText = `[${batch_size}, ${seq_len}, ${d_model}]`;
+            }
+            document.getElementById('shape-fusion').innerText = `[${batch_size}, ${seq_len}, ${d_model}]`;
+            document.getElementById('shape-transformer').innerText = `[${batch_size}, ${seq_len}, ${d_model}]`;
+            document.getElementById('shape-prediction').innerText = `[${batch_size}, ${num_items + 1}]`;
+
+            // Update Calculator values
+            const info = layerDetails[currentLayer];
+            document.getElementById('calc-layer-name').innerText = info.title;
+            
+            // Format shapes
+            let inputShapeStr = info.calcInput();
+            let outputShapeStr = info.calcOutput();
+
+            // Replace placeholder variables with numbers
+            inputShapeStr = replaceVariables(inputShapeStr);
+            outputShapeStr = replaceVariables(outputShapeStr);
+
+            document.getElementById('calc-input-shape').innerText = inputShapeStr;
+            document.getElementById('calc-output-shape').innerText = outputShapeStr;
+
+            // Calculate params
+            let paramsNum = (typeof info.calcParams === 'function') ? info.calcParams() : info.calcParams;
+            document.getElementById('calc-params').innerText = formatNumber(paramsNum);
+        }
+
+        // HELPER FUNCTIONS
+        function replaceVariables(str) {
+            return str
+                .replace(/Batch/g, batch_size)
+                .replace(/Seq\_Len/g, seq_len)
+                .replace(/d\_model/g, d_model)
+                .replace(/Num\_Items/g, num_items)
+                .replace(/768/g, 768);
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // ONLOAD HANDLER
+        window.addEventListener('load', () => {
+            selectLayer('input');
+        });
+    </script>
+</body>
+</html>
