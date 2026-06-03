@@ -2,7 +2,7 @@ $ErrorActionPreference = "Stop"
 Write-Host "Setting up Python 3.12 local environment..."
 
 # 1. Create directory python_env
-$envDir = "c:\Users\ZONAABC\Downloads\RS- GRISALES\python_env"
+$envDir = "$PSScriptRoot\python_env"
 if (-not (Test-Path $envDir)) {
     New-Item -ItemType Directory -Force -Path $envDir | Out-Null
 }

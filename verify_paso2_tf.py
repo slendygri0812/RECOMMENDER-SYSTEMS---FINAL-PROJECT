@@ -1,12 +1,13 @@
+import os
 import sys
-sys.path.append(r"c:\Users\ZONAABC\Downloads\RS- GRISALES")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import tensorflow as tf
 import numpy as np
 from data_utils import load_and_preprocess_data, get_item_descriptions, encode_ids
 from distilbert_extractor import DistilBERTExtractor
 
-csv_path = r"c:\Users\ZONAABC\Downloads\RS- GRISALES\steam_reviews_bruteforce.csv"
+csv_path = "steam_reviews_bruteforce.csv"
 
 # 1. Load data and extract descriptions
 df_filtered = load_and_preprocess_data(csv_path, min_interactions=5)

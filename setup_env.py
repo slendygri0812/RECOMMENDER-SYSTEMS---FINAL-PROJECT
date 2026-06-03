@@ -6,7 +6,7 @@ import sys
 
 print("Setting up Python 3.12 local environment...")
 
-env_dir = r"c:\Users\ZONAABC\Downloads\RS- GRISALES\python_env"
+env_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "python_env")
 os.makedirs(env_dir, exist_ok=True)
 
 # 1. Download Python 3.12.8 Embeddable

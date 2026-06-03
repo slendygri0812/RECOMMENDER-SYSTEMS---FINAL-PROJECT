@@ -1,5 +1,6 @@
+import os
 import sys
-sys.path.append(r"c:\Users\ZONAABC\Downloads\RS- GRISALES")
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import tensorflow as tf
 import numpy as np

@@ -4,8 +4,8 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 import pandas as pd
 import numpy as np
-import torch
-from data_utils import load_and_preprocess_data, get_item_descriptions, encode_ids, split_and_generate_sequences, get_dataloaders
+import tensorflow as tf
+from data_utils import load_and_preprocess_data, get_item_descriptions, encode_ids, split_and_generate_sequences, get_tf_datasets
 
 csv_path = "steam_reviews_bruteforce.csv"
 
@@ -13,7 +13,7 @@ csv_path = "steam_reviews_bruteforce.csv"
 df_filtered = load_and_preprocess_data(csv_path, min_interactions=5)
 
 # Verify sequence counts and timestamps
-print("\n--- PASO 1 Verification ---")
+print("\n--- PASO 1 TensorFlow Verification ---")
 print(f"Number of rows after filtering: {len(df_filtered)}")
 print(f"Number of unique users: {df_filtered['steamid'].nunique()}")
 print(f"Number of unique games: {df_filtered['appid'].nunique()}")
@@ -53,13 +53,15 @@ print(f"First User training target sequence: {train_targets[0]}")
 print(f"First User validation input sequence: {val_seqs[0]} -> Target: {val_targets[0]}")
 print(f"First User test input sequence: {test_seqs[0]} -> Target: {test_targets[0]}")
 
-train_loader, val_loader, test_loader = get_dataloaders(
+train_dataset, val_dataset, test_dataset = get_tf_datasets(
     train_seqs, train_targets, val_seqs, val_targets, test_seqs, test_targets, batch_size=32
 )
+
 # Fetch first batch
-for seqs, targets in train_loader:
-    print(f"\nPyTorch Dataloader Verification:")
+for seqs, targets in train_dataset:
+    print(f"\nTensorFlow Dataset Verification:")
     print(f"  Train Batch input shape: {seqs.shape}")
     print(f"  Train Batch target shape: {targets.shape}")
     break
-print("\nPASO 1 logic fully verified with PyTorch successfully!")
+
+print("\nPASO 1 TensorFlow logic successfully verified!")

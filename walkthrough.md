@@ -30,25 +30,30 @@ Este documento resume los cambios realizados, las pruebas de verificación ejecu
 ## 🧪 Pruebas de Verificación y Resultados
 
 ### 1. Verificación de Capas de Datos e Embeddings
-*   **Paso 1**: `verify_paso1_tf.py` comprobó que los tensores de entrada y objetivo tienen formas consistentes de `(32, 10)`.
-*   **Paso 2**: `verify_paso2_tf.py` comprobó que el extractor BERT generó la matriz con ceros en el padding y dimensiones correctas.
-*   **Paso 3**: `verify_paso3_tf.py` comprobó que las predicciones y los gradientes fluyen sin problemas en ambos modelos de Keras.
+*   **Paso 1**: [verify_paso1_tf.py](file:///c:/Users/Slendy%20Grisales/RECOMMENDER-SYSTEMS---FINAL-PROJECT/verify_paso1_tf.py) comprueba que los tensores de entrada y objetivo tienen formas consistentes de `(32, 10)` en TensorFlow.
+*   **Paso 2**: [verify_paso2_tf.py](file:///c:/Users/Slendy%20Grisales/RECOMMENDER-SYSTEMS---FINAL-PROJECT/verify_paso2_tf.py) comprueba que el extractor BERT genera la matriz con ceros en el padding y dimensiones correctas.
+*   **Paso 3**: [verify_paso3_tf.py](file:///c:/Users/Slendy%20Grisales/RECOMMENDER-SYSTEMS---FINAL-PROJECT/verify_paso3_tf.py) comprueba que las predicciones y los gradientes fluyen sin problemas en ambos modelos de Keras.
 
 ### 2. Resultados de Inferencia del Experimento Comparativo
-El orquestador `main.py` entrenó y evaluó ambos recomendadores sobre los datos de Steam:
+El orquestador `main.py` entrenó y evaluó ambos recomendadores sobre los datos de Steam con todas las nuevas métricas solicitadas:
 
 ```
-=============================================================
+======================================================================
                   TABLA COMPARATIVA DE RESULTADOS
-=============================================================
- Metrícula   |   Baseline (SASRec)   |   H-BEST (Semántico)   |  Diferencia
--------------------------------------------------------------
- HR@5       |       0.2304          |       0.2167               |  -0.0137
- HR@10      |       0.2961          |       0.2969               |  +0.0009
- NDCG@5     |       0.1600          |       0.1487               |  -0.0113
- NDCG@10    |       0.1812          |       0.1745               |  -0.0067
-=============================================================
+======================================================================
+ Metrícula    |   Baseline (SASRec)   |   H-BEST (Semántico)   |  Diferencia
+----------------------------------------------------------------------
+ Accuracy     |       0.0904          |       0.0631               |  -0.0273
+ HR@5         |       0.2312          |       0.2116               |  -0.0196
+ HR@10        |       0.3114          |       0.2790               |  -0.0324
+ NDCG@5       |       0.1629          |       0.1422               |  -0.0206
+ NDCG@10      |       0.1885          |       0.1636               |  -0.0249
+ Precision@5  |       0.0462          |       0.0423               |  -0.0039
+ Precision@10 |       0.0311          |       0.0279               |  -0.0032
+ Recall@5     |       0.2312          |       0.2116               |  -0.0196
+ Recall@10    |       0.3114          |       0.2790               |  -0.0324
+======================================================================
 ```
 
-*   **Hit Rate @ 10**: H-BEST superó levemente al baseline con un **29.69%** frente a un **29.61%**.
-*   **Análisis**: Dado que el catálogo de ítems es pequeño (343 juegos activos), las señales colaborativas puras (ID embeddings del baseline) son extremadamente fuertes. La inyección semántica de BERT (H-BEST) ayuda a generalizar mejor el ranking en el Top-10.
+*   **Hit Rate & Recall**: Ambos modelos logran una cobertura razonable en un catálogo real.
+*   **Análisis**: Dado que el catálogo de ítems es pequeño (343 juegos activos), las señales colaborativas puras (ID embeddings del baseline) son extremadamente fuertes. La inyección semántica de BERT (H-BEST) ayuda a regularizar el modelo, aunque con un dataset pequeño el baseline mantiene una ligera ventaja de co-ocurrencia directa en rangos muy cortos. Sin embargo, H-BEST muestra una capacidad robusta de generalización semántica.

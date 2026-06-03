@@ -29,6 +29,19 @@ def compute_masked_loss(logits, targets, loss_fn):
     
     return loss_sum / (mask_sum + 1e-9)
 
+def compute_val_loss(model, dataset, loss_fn):
+    r"""
+    Calcula la pérdida de entropía cruzada en el conjunto de validación.
+    """
+    total_loss = 0.0
+    steps = 0
+    for seq_ids, targets in dataset:
+        logits = model.predict_logits(seq_ids)
+        loss = loss_fn(targets, logits)
+        total_loss += tf.reduce_mean(loss).numpy()
+        steps += 1
+    return total_loss / (steps + 1e-9)
+
 def train_epoch(model, dataset, optimizer, loss_fn):
     epoch_loss = 0.0
     steps = 0
@@ -54,26 +67,38 @@ def train_epoch(model, dataset, optimizer, loss_fn):
         
     return epoch_loss / (steps + 1e-9)
 
-def train_model(model, train_dataset, val_dataset, epochs=20, lr=0.001, weight_decay=1e-4, verbose=True):
+def train_model(model, train_dataset, val_dataset, epochs=20, lr=0.001, weight_decay=1e-4, verbose=True, plot_results=True, model_name="model"):
     optimizer = tf.keras.optimizers.AdamW(learning_rate=lr, weight_decay=weight_decay)
     loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')
     
     best_ndcg = -1.0
     best_weights = None
     
+    history = {
+        'train_loss': [],
+        'val_loss': [],
+        'epochs': list(range(1, epochs + 1)),
+        'val_metrics': []
+    }
+    
     if verbose:
         print(f"\nIniciando entrenamiento por {epochs} épocas...")
         
     for epoch in range(1, epochs + 1):
         loss = train_epoch(model, train_dataset, optimizer, loss_fn)
+        val_loss = compute_val_loss(model, val_dataset, loss_fn)
         
         # Evaluar sobre el conjunto de validación (K=10)
         val_metrics = evaluate_model(model, val_dataset, k_list=[10])
         val_ndcg = val_metrics["NDCG@10"]
         val_hr = val_metrics["HR@10"]
         
+        history['train_loss'].append(loss)
+        history['val_loss'].append(val_loss)
+        history['val_metrics'].append(val_metrics)
+        
         if verbose:
-            print(f"Época {epoch:02d}/{epochs:02d} | Pérdida Train: {loss:.4f} | Val HR@10: {val_hr:.4f} | Val NDCG@10: {val_ndcg:.4f}")
+            print(f"Época {epoch:02d}/{epochs:02d} | Pérdida Train: {loss:.4f} | Pérdida Val: {val_loss:.4f} | Val HR@10: {val_hr:.4f} | Val NDCG@10: {val_ndcg:.4f} | Val Acc: {val_metrics['Accuracy']:.4f}")
             
         # Guardar pesos del mejor modelo basado en NDCG@10
         if val_ndcg > best_ndcg:
@@ -87,4 +112,8 @@ def train_model(model, train_dataset, val_dataset, epochs=20, lr=0.001, weight_d
         for w, best_w in zip(model.weights, best_weights):
             w.assign(best_w)
             
-    return model
+    if plot_results:
+        from evaluate import plot_training_validation_curves
+        plot_training_validation_curves(history, save_dir=f"plots_{model_name}")
+        
+    return model, history
