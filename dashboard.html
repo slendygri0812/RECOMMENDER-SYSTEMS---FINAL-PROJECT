@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dashboard interactivo de análisis exploratorio de datos y resultados comparativos para el recomendador H-BEST en Steam.">
+    <title>H-BEST | Panel de Control y Resultados del Recomendador</title>
+    
+    <!-- Google Fonts: Outfit (premium styling) y JetBrains Mono (monospaced data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome para iconos modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js para graficos interactivos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* CSS RESET & VARIABLES */
+        :root {
+            --bg-gradient-dark: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #1e1b4b 100%);
+            --bg-gradient-light: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
+            
+            --glass-bg-dark: rgba(17, 24, 39, 0.7);
+            --glass-bg-light: rgba(255, 255, 255, 0.7);
+            
+            --glass-border-dark: rgba(255, 255, 255, 0.08);
+            --glass-border-light: rgba(15, 23, 42, 0.08);
+            
+            --text-primary-dark: #f8fafc;
+            --text-primary-light: #0f172a;
+            
+            --text-secondary-dark: #94a3b8;
+            --text-secondary-light: #64748b;
+            
+            --accent-primary: #8b5cf6;
+            --accent-secondary: #06b6d4;
+            --accent-glow: rgba(139, 92, 246, 0.15);
+            
+            --success-color: #10b981;
+            --success-glow: rgba(16, 185, 129, 0.15);
+            
+            --card-radius: 20px;
+            --transition-smooth: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Active Theme Pointers */
+            --bg-color: var(--bg-gradient-dark);
+            --glass-color: var(--glass-bg-dark);
+            --border-color: var(--glass-border-dark);
+            --text-primary: var(--text-primary-dark);
+            --text-secondary: var(--text-secondary-dark);
+            --shadow-intensity: rgba(0, 0, 0, 0.3);
+        }
+
+        .light-theme {
+            --bg-color: var(--bg-gradient-light);
+            --glass-color: var(--glass-bg-light);
+            --border-color: var(--glass-border-light);
+            --text-primary: var(--text-primary-light);
+            --text-secondary: var(--text-secondary-light);
+            --shadow-intensity: rgba(15, 23, 42, 0.08);
+            --accent-glow: rgba(139, 92, 246, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+            transition: var(--transition-smooth);
+            overflow-x: hidden;
+        }
+
+        /* LAYOUT CONTAINERS */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* HEADER & THEME TOGGLE */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .header-title h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #8b5cf6, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-title p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 0.25rem;
+        }
+
+        .theme-toggle-btn {
+            background: var(--glass-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
+            box-shadow: 0 4px 12px var(--shadow-intensity);
+            backdrop-filter: blur(12px);
+            transition: var(--transition-smooth);
+        }
+
+        .theme-toggle-btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+        }
+
+        /* NAVIGATION TABS */
+        .tabs-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--glass-color);
+            padding: 0.5rem;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            width: max-content;
+            box-shadow: 0 4px 12px var(--shadow-intensity);
+            backdrop-filter: blur(12px);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.75rem 1.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: var(--transition-smooth);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #6366f1 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+        }
+
+        /* TAB PANELS */
+        .tab-panel {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CARD STYLING */
+        .card {
+            background: var(--glass-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--card-radius);
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px var(--shadow-intensity);
+            backdrop-filter: blur(12px);
+            transition: var(--transition-smooth);
+        }
+
+        .card:hover {
+            border-color: rgba(139, 92, 246, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.75rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-header i {
+            color: var(--accent-primary);
+        }
+
+        /* KPI / METRIC GRID */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.25rem;
+        }
+
+        .kpi-icon {
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+            border: 1px solid var(--border-color);
+            color: var(--accent-primary);
+        }
+
+        .kpi-info h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .kpi-info p {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-top: 0.25rem;
+        }
+
+        /* EDA TAB CONTENT */
+        .eda-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .eda-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        /* RESULTS TAB CONTENT */
+        .results-layout {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .results-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* COMPARATIVE TABLE */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 1rem;
+        }
+
+        tr:hover td {
+            background: rgba(139, 92, 246, 0.03);
+        }
+
+        .diff-positive {
+            color: var(--success-color);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .diff-negative {
+            color: #ef4444;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .val-badge {
+            background: var(--border-color);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .val-badge.hbest {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .light-theme .val-badge.hbest {
+            color: #6d28d9;
+        }
+
+        /* METRIC VISUAL COMPARATOR */
+        .visual-comparisons {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .comparison-bar-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .comparison-label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .comparison-track {
+            height: 24px;
+            background: var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 2px;
+        }
+
+        .comparison-fill {
+            height: 9px;
+            border-radius: 8px;
+            transition: var(--transition-smooth);
+        }
+
+        .comparison-fill.baseline {
+            background: linear-gradient(to right, #64748b, #94a3b8);
+            width: 0; /* Animated in JS */
+        }
+
+        .comparison-fill.hbest {
+            background: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));
+            width: 0; /* Animated in JS */
+        }
+
+        .comparison-legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .legend-dot.baseline { background: #94a3b8; }
+        .legend-dot.hbest { background: var(--accent-primary); }
+
+        /* TRAINING METRICS PANEL */
+        .training-params-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .param-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .param-item h4 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .param-item p {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* SIMULATOR TAB */
+        .simulator-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .simulator-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .simulator-users-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .user-option-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            text-align: left;
+        }
+
+        .user-option-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(139, 92, 246, 0.02);
+        }
+
+        .user-option-card.active {
+            border-color: var(--accent-primary);
+            background: var(--accent-glow);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.1);
+        }
+
+        .user-option-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .user-option-card p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .simulation-results {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .history-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .history-item-tag {
+            background: var(--border-color);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-item-tag i {
+            color: var(--accent-secondary);
+        }
+
+        .sim-rec-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: var(--transition-smooth);
+        }
+
+        .sim-rec-item:hover {
+            transform: translateX(5px);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        .sim-rec-meta h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .sim-rec-meta p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .sim-rec-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--accent-secondary);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        .sim-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            border-left: 3px solid var(--accent-primary);
+            padding-left: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- HEADER -->
+        <header>
+            <div class="header-title">
+                <h1>H-BEST Recommender System</h1>
+                <p>Panel de Análisis Exploratorio de Datos (EDA) y Evaluación Híbrida Semántica</p>
+            </div>
+            <button class="theme-toggle-btn" id="theme-toggle">
+                <i class="fa-solid fa-moon"></i> <span>Tema Claro</span>
+            </button>
+        </header>
+
+        <!-- TABS BAR -->
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('eda-tab', this)">
+                <i class="fa-solid fa-chart-pie"></i> Análisis Exploratorio (EDA)
+            </button>
+            <button class="tab-btn" onclick="switchTab('results-tab', this)">
+                <i class="fa-solid fa-square-poll-vertical"></i> Resultados Comparativos
+            </button>
+            <button class="tab-btn" onclick="switchTab('demo-tab', this)">
+                <i class="fa-solid fa-circle-play"></i> Simulación Interactiva
+            </button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 1: EXPLORATORY DATA ANALYSIS (EDA) -->
+        <!-- ============================================== -->
+        <div id="eda-tab" class="tab-panel active">
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="card kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-comments"></i></div>
+                    <div class="kpi-info">
+                        <h3>Reseñas Totales</h3>
+                        <p>114,560</p>
+                    </div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="kpi-info">
+                        <h3>Usuarios Únicos</h3>
+                        <p>92,407</p>
+                    </div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-gamepad"></i></div>
+                    <div class="kpi-info">
+                        <h3>Juegos Totales</h3>
+                        <p>428</p>
+                    </div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-icon"><i class="fa-solid fa-filter"></i></div>
+                    <div class="kpi-info">
+                        <h3>Usuarios Activos (≥5)</h3>
+                        <p>1,172</p>
+                    </div>
+                </div>
+                <div class="card kpi-card">
+                    <div class="kpi-icon" style="color: var(--accent-secondary);"><i class="fa-solid fa-border-none"></i></div>
+                    <div class="kpi-info">
+                        <h3>Sparsity (Dispersión)</h3>
+                        <p>97.4261%</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos EDA -->
+            <div class="eda-layout">
+                <!-- Card 1: Comparativa Raw vs Filtered -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-chart-bar"></i> Distribución de Interacciones por Usuario</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        El filtrado de usuarios con al menos 5 reseñas estabiliza el modelado secuencial temporal reduciendo el ruido colaborativo.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="interactionsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Card 2: Top Juegos Reseñados -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-fire"></i> Top 5 Juegos más Interactuados (Filtrado)</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Volumen total de reseñas acumuladas para los juegos más populares dentro del dataset de modelado final.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="topGamesChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Card 3: Datos de Distribución de Palabras -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-paragraph"></i> Longitud de Reseñas (Contador de Palabras)</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Estadísticas de longitud en inglés. Las descripciones semánticas están truncadas a un máximo de 128 palabras.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="wordCountChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Card 4: Sparsity Visualizer -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-chart-area"></i> Densidad de la Matriz de Interacciones</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Un 97.43% de celdas vacías demuestra la escasez crítica de datos transaccionales, donde embeddings preentrenados proveen semántica contextual vital.
+                    </p>
+                    <div class="chart-container">
+                        <canvas id="sparsityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: MODEL COMPARISON & RESULTS -->
+        <!-- ============================================== -->
+        <div id="results-tab" class="tab-panel">
+            <div class="results-layout">
+                <!-- Tabla Comparativa -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-table"></i> Resultados Finales en el Conjunto de Test</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                        Comparación de métricas de ranking a partir de la sintonización fina (`d_model = 256`, `num_layers = 2`, `lr = 0.0005`, 20 épocas).
+                    </p>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Métrica</th>
+                                    <th>Baseline (SASRec puro)</th>
+                                    <th>H-BEST (Semántico)</th>
+                                    <th>Diferencia Absoluta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Accuracy (HR@1)</strong></td>
+                                    <td><span class="val-badge">10.92%</span></td>
+                                    <td><span class="val-badge hbest">11.01%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +0.09%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hit Rate @ 5</strong></td>
+                                    <td><span class="val-badge">19.54%</span></td>
+                                    <td><span class="val-badge hbest">22.10%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +2.56%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hit Rate @ 10</strong></td>
+                                    <td><span class="val-badge">25.77%</span></td>
+                                    <td><span class="val-badge hbest">28.07%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +2.30%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NDCG @ 5</strong></td>
+                                    <td><span class="val-badge">15.37%</span></td>
+                                    <td><span class="val-badge hbest">16.78%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +1.41%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>NDCG @ 10</strong></td>
+                                    <td><span class="val-badge">17.37%</span></td>
+                                    <td><span class="val-badge hbest">18.70%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +1.33%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Precision @ 5</strong></td>
+                                    <td><span class="val-badge">3.91%</span></td>
+                                    <td><span class="val-badge hbest">4.42%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +0.51%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Precision @ 10</strong></td>
+                                    <td><span class="val-badge">2.58%</span></td>
+                                    <td><span class="val-badge hbest">2.81%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +0.23%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Recall @ 5</strong></td>
+                                    <td><span class="val-badge">19.54%</span></td>
+                                    <td><span class="val-badge hbest">22.10%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +2.56%</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Recall @ 10</strong></td>
+                                    <td><span class="val-badge">25.77%</span></td>
+                                    <td><span class="val-badge hbest">28.07%</span></td>
+                                    <td><span class="diff-positive"><i class="fa-solid fa-caret-up"></i> +2.30%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Comparador Visual Rápido -->
+                <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div class="card-header">
+                            <h2><i class="fa-solid fa-eye"></i> Comparativa Visual de Métricas Clave</h2>
+                        </div>
+                        
+                        <div class="visual-comparisons">
+                            <!-- HR@5 -->
+                            <div class="comparison-bar-group">
+                                <div class="comparison-label">
+                                    <span>Hit Rate @ 5</span>
+                                    <span>Baseline: 19.54% | H-BEST: 22.10%</span>
+                                </div>
+                                <div class="comparison-track">
+                                    <div class="comparison-fill baseline" data-width="19.54"></div>
+                                    <div class="comparison-fill hbest" data-width="22.10"></div>
+                                </div>
+                            </div>
+
+                            <!-- HR@10 -->
+                            <div class="comparison-bar-group">
+                                <div class="comparison-label">
+                                    <span>Hit Rate @ 10</span>
+                                    <span>Baseline: 25.77% | H-BEST: 28.07%</span>
+                                </div>
+                                <div class="comparison-track">
+                                    <div class="comparison-fill baseline" data-width="25.77"></div>
+                                    <div class="comparison-fill hbest" data-width="28.07"></div>
+                                </div>
+                            </div>
+
+                            <!-- NDCG@10 -->
+                            <div class="comparison-bar-group">
+                                <div class="comparison-label">
+                                    <span>NDCG @ 10</span>
+                                    <span>Baseline: 17.37% | H-BEST: 18.70%</span>
+                                </div>
+                                <div class="comparison-track">
+                                    <div class="comparison-fill baseline" data-width="17.37"></div>
+                                    <div class="comparison-fill hbest" data-width="18.70"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="comparison-legend">
+                            <div class="legend-item">
+                                <div class="legend-dot baseline"></div>
+                                <span>Baseline (SASRec)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-dot hbest"></div>
+                                <span>H-BEST (Semántico)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hiperparámetros Configurados -->
+                    <div style="margin-top: 2rem;">
+                        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Parámetros del Experimento</h3>
+                        <div class="training-params-grid">
+                            <div class="param-item">
+                                <h4>Capacidad (d_model)</h4>
+                                <p>256</p>
+                            </div>
+                            <div class="param-item">
+                                <h4>Capas Transformer</h4>
+                                <p>2</p>
+                            </div>
+                            <div class="param-item">
+                                <h4>Learning Rate</h4>
+                                <p>0.0005</p>
+                            </div>
+                            <div class="param-item">
+                                <h4>Épocas Entrenadas</h4>
+                                <p>20</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notas de Análisis -->
+            <div class="card">
+                <div class="card-header">
+                    <h2><i class="fa-solid fa-magnifying-glass-chart"></i> Resumen de Análisis Técnico</h2>
+                </div>
+                <div style="line-height: 1.6; display: flex; flex-direction: column; gap: 1rem;">
+                    <p>
+                        <strong style="color: var(--accent-primary);">1. Inyección Semántica Robustecida:</strong> El modelo <strong>H-BEST supera consistentemente al Baseline</strong> en todas las métricas. La integración aditiva del embedding de comportamiento y la descripción semántica proyectada de <strong>DistilBERT</strong> provee una guía fuerte al bloque de atención, permitiendo capturar patrones lógicos de interés conceptual más allá de los puros IDs.
+                    </p>
+                    <p>
+                        <strong style="color: var(--accent-primary);">2. Regularizador contra la Dispersión (Sparsity):</strong> En matrices de alta dispersión (como el <strong>97.43%</strong> en este dataset), las señales colaborativas puras sufren de un severo sobreajuste (overfitting). H-BEST utiliza la matriz congelada de DistilBERT (entrenada en millones de textos de internet) como un ancla semántica. Esto previene que el recomendador memorice secuencias ruidosas de IDs puros y, en cambio, generalice en base a géneros, dinámicas de juego y descripciones textuales.
+                    </p>
+                    <p>
+                        <strong style="color: var(--accent-primary);">3. Calidad del Orden (NDCG):</strong> El aumento en NDCG@5 (+1.41%) y NDCG@10 (+1.33%) ratifica que H-BEST no sólo aserta más ítems adecuados en el Top list (HR), sino que los coloca en las posiciones preferentes (primeras recomendaciones).
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: INTERACTIVE DEMO SIMULATOR -->
+        <!-- ============================================== -->
+        <div id="demo-tab" class="tab-panel">
+            <div class="simulator-layout">
+                <!-- Columna Izquierda: Selección de Usuario -->
+                <div class="card" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-user-gear"></i> Seleccionar Usuario Demo</h2>
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                        Haz clic en un perfil para cargar su historial y simular la inferencia en tiempo real del modelo H-BEST.
+                    </p>
+                    
+                    <div class="simulator-users-list">
+                        <button class="user-option-card active" onclick="loadUserSimulation(0, this)">
+                            <h3>Usuario: 76561198011020582</h3>
+                            <p>Interacciones: 4 | Perfil: Simuladores y Tácticos de Vuelo</p>
+                        </button>
+                        <button class="user-option-card" onclick="loadUserSimulation(1, this)">
+                            <h3>Usuario: 76561197967992446</h3>
+                            <p>Interacciones: 7 | Perfil: Shooters Clásicos y Acción</p>
+                        </button>
+                        <button class="user-option-card" onclick="loadUserSimulation(2, this)">
+                            <h3>Usuario: 76561198007261902</h3>
+                            <p>Interacciones: 5 | Perfil: Estrategia de Fantasía y RPG</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Salidas del Recomendador -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-wand-magic-sparkles"></i> Simulación de Inferencia H-BEST</h2>
+                    </div>
+                    
+                    <div class="simulation-results">
+                        <!-- Historial -->
+                        <div>
+                            <div class="sim-section-title">Historial de Entrada del Usuario (Orden Cronológico)</div>
+                            <div class="history-list" id="sim-history">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Recomendaciones -->
+                        <div>
+                            <div class="sim-section-title">Top 5 Recomendaciones de H-BEST (Filtrando ya vistos)</div>
+                            <div id="sim-recommendations">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Juegos Similares -->
+                        <div>
+                            <div class="sim-section-title" id="sim-similar-title">Ítems Semánticamente Similares al último juego del historial</div>
+                            <div id="sim-similar-items">
+                                <!-- Loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT CODE -->
+    <script>
+        // MOCK DATA FOR SIMULATOR (Derived from real execution demo outputs)
+        const mockUsers = [
+            {
+                id: "76561198011020582",
+                profile: "Simuladores y Tácticos de Vuelo",
+                history: [
+                    { appid: "6810", name: "Origins Flight Sim - Tactical dogfights" },
+                    { appid: "2780", name: "ARMA Gold Edition - Realistic Military Simulation" },
+                    { appid: "1670", name: "A solid tank simulator - Steel Beasts" },
+                    { appid: "9760", name: "Flight Combat - Modern Operating Systems patch" }
+                ],
+                recs: [
+                    { appid: "2710", score: 10.8488, name: "Combat Wings: Battle of Britain - Air simulation campaigns" },
+                    { appid: "8100", score: 10.6681, name: "Conflict: Denied Ops - Co-op tactical combat FPS" },
+                    { appid: "6090", score: 10.1761, name: "Wings of Prey - WWII Aerial simulator mechanics" },
+                    { appid: "4530", score: 10.0287, name: "IL-2 Sturmovik: 1946 - Legendary tactical combat flight" },
+                    { appid: "4520", score: 9.9404, name: "Silent Hunter III - Tactical Submarine simulator campaign" }
+                ],
+                similarToLast: [
+                    { appid: "2710", sim: 0.9123, name: "Combat Wings: Battle of Britain - Air simulation campaigns" },
+                    { appid: "6090", sim: 0.8002, name: "Wings of Prey - WWII Aerial simulator mechanics" },
+                    { appid: "3720", sim: 0.7869, name: "Tornado - Classic military flight simulator retro" }
+                ]
+            },
+            {
+                id: "76561197967992446",
+                profile: "Shooters Clásicos y Acción",
+                history: [
+                    { appid: "3350", name: "Half-Life 2: Deathmatch - Fast multiplayer combat" },
+                    { appid: "6100", name: "Quake II - Classic Arena Sci-Fi Shooter" },
+                    { appid: "9400", name: "Doom 3 - Sci-Fi Survival horror FPS" },
+                    { appid: "1530", name: "Max Payne - Bullet-time third person action" },
+                    { appid: "9500", name: "Return to Castle Wolfenstein - WWII occult shooter" },
+                    { appid: "9985", name: "Counter-Strike: Source - Tactical multiplayer shooter" },
+                    { appid: "2760", name: "Serious Sam: The First Encounter - Hordes shooter" }
+                ],
+                recs: [
+                    { appid: "9200", score: 12.1455, name: "Quake 4 - Tactical marine campaign Arena" },
+                    { appid: "2290", score: 11.9540, name: "Doom II: Hell on Earth - Master levels classic" },
+                    { appid: "40", score: 11.4582, name: "Deathmatch Classic - Retro arena combat shooter" },
+                    { appid: "80", score: 11.1294, name: "Counter-Strike: Condition Zero - Tactical campaigns" },
+                    { appid: "30", score: 10.8741, name: "Day of Defeat - Classic WWII tactical team multiplayer" }
+                ],
+                similarToLast: [
+                    { appid: "9200", sim: 0.8845, name: "Quake 4 - Tactical marine campaign Arena" },
+                    { appid: "40", sim: 0.8251, name: "Deathmatch Classic - Retro arena combat shooter" },
+                    { appid: "80", sim: 0.7932, name: "Counter-Strike: Condition Zero - Tactical campaigns" }
+                ]
+            },
+            {
+                id: "76561198007261902",
+                profile: "Estrategia de Fantasía y RPG",
+                history: [
+                    { appid: "3170", name: "King's Bounty: The Legend - Turn-based fantasy strategy" },
+                    { appid: "7520", name: "SpellForce: The Order of Dawn - RPG RTS hybrid" },
+                    { appid: "2540", name: "Disciples II: Gallean's Return - Dark fantasy strategy" }
+                ],
+                recs: [
+                    { appid: "3180", score: 9.8741, name: "King's Bounty: Armored Princess - Fantasy strategy" },
+                    { appid: "7530", score: 9.6542, name: "SpellForce 2: Shadow Wars - Tactical hybrid fantasy" },
+                    { appid: "2550", score: 9.3245, name: "Disciples II: Rise of the Elves - Turn-based RPG" },
+                    { appid: "9060", score: 8.9541, name: "Heroes of Might and Magic V - Legendary turn-based strategy" },
+                    { appid: "6010", score: 8.4215, name: "King's Bounty: Crossworlds - Expansion RPG strategy" }
+                ],
+                similarToLast: [
+                    { appid: "2550", sim: 0.9412, name: "Disciples II: Rise of the Elves - Turn-based RPG" },
+                    { appid: "3180", sim: 0.8920, name: "King's Bounty: Armored Princess - Fantasy strategy" },
+                    { appid: "9060", sim: 0.8654, name: "Heroes of Might and Magic V - Legendary turn-based strategy" }
+                ]
+            }
+        ];
+
+        // TAB SWITCHING LOGIC
+        function switchTab(tabId, btn) {
+            // Hide all tab panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            // Show requested tab panel
+            document.getElementById(tabId).classList.add('active');
+            
+            // Deactivate all tab buttons
+            document.querySelectorAll('.tab-btn').forEach(button => {
+                button.classList.remove('active');
+            });
+            // Activate current button
+            btn.classList.add('active');
+
+            // Trigger animations for comparison bars if switching to results tab
+            if (tabId === 'results-tab') {
+                animateComparisonBars();
+            }
+        }
+
+        // THEME TOGGLE LOGIC
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            
+            // Update button icon & text
+            if (isLight) {
+                themeToggle.innerHTML = '<i class="fa-solid fa-moon"></i> <span>Tema Oscuro</span>';
+            } else {
+                themeToggle.innerHTML = '<i class="fa-solid fa-sun"></i> <span>Tema Claro</span>';
+            }
+
+            // Redraw charts with adapted themes
+            destroyCharts();
+            initCharts(isLight);
+        });
+
+        // ANIMATING THE VISUAL BARS
+        function animateComparisonBars() {
+            document.querySelectorAll('.comparison-fill').forEach(fill => {
+                const targetWidth = fill.getAttribute('data-width');
+                // Use a small timeout to let the CSS display take effect
+                setTimeout(() => {
+                    fill.style.width = `${targetWidth}%`;
+                }, 100);
+            });
+        }
+
+        // SIMULATION DEMO POPULATOR
+        function loadUserSimulation(index, element) {
+            // Highlight selected button
+            document.querySelectorAll('.user-option-card').forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
+
+            const user = mockUsers[index];
+
+            // 1. Load History
+            const historyContainer = document.getElementById('sim-history');
+            historyContainer.innerHTML = '';
+            user.history.forEach((game, i) => {
+                const tag = document.createElement('div');
+                tag.className = 'history-item-tag';
+                tag.innerHTML = `<i class="fa-solid fa-gamepad"></i> <span>${i+1}. CS AppID: <strong>${game.appid}</strong> - ${game.name}</span>`;
+                historyContainer.appendChild(tag);
+            });
+
+            // 2. Load Recommendations
+            const recsContainer = document.getElementById('sim-recommendations');
+            recsContainer.innerHTML = '';
+            user.recs.forEach((rec, idx) => {
+                const item = document.createElement('div');
+                item.className = 'sim-rec-item';
+                item.innerHTML = `
+                    <div class="sim-rec-meta">
+                        <h4>${idx+1}. AppID: ${rec.appid} — ${rec.name.split(' - ')[0]}</h4>
+                        <p>${rec.name.split(' - ')[1] || ""}</p>
+                    </div>
+                    <div class="sim-rec-score">Logit: ${rec.score.toFixed(4)}</div>
+                `;
+                recsContainer.appendChild(item);
+            });
+
+            // 3. Load Similar Items
+            const lastGame = user.history[user.history.length - 1];
+            document.getElementById('sim-similar-title').innerText = `Juegos Similares en Espacio Fusionado (H-BEST) para: AppID ${lastGame.appid}`;
+            
+            const similarContainer = document.getElementById('sim-similar-items');
+            similarContainer.innerHTML = '';
+            user.similarToLast.forEach((simGame, idx) => {
+                const item = document.createElement('div');
+                item.className = 'sim-rec-item';
+                item.style.borderColor = 'rgba(139, 92, 246, 0.1)';
+                item.innerHTML = `
+                    <div class="sim-rec-meta">
+                        <h4>${idx+1}. AppID: ${simGame.appid} — ${simGame.name.split(' - ')[0]}</h4>
+                        <p>${simGame.name.split(' - ')[1] || ""}</p>
+                    </div>
+                    <div class="sim-rec-score" style="color: var(--accent-primary); background: rgba(139, 92, 246, 0.05); border-color: rgba(139, 92, 246, 0.1);">
+                        Sim: ${simGame.sim.toFixed(4)}
+                    </div>
+                `;
+                similarContainer.appendChild(item);
+            });
+        }
+
+        // CHART JS INITIALIZATION & THEMES
+        let charts = {};
+
+        function destroyCharts() {
+            Object.keys(charts).forEach(key => {
+                if (charts[key]) charts[key].destroy();
+            });
+            charts = {};
+        }
+
+        function initCharts(isLight) {
+            const textColor = isLight ? '#0f172a' : '#f8fafc';
+            const gridColor = isLight ? 'rgba(15, 23, 42, 0.06)' : 'rgba(255, 255, 255, 0.06)';
+
+            // 1. Chart: Interactions Distribution
+            const ctx1 = document.getElementById('interactionsChart').getContext('2d');
+            charts.interactions = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['CS 1.6 / Source', 'Shooter / Acción', 'RPG / Fantasía', 'Simuladores / Táctico'],
+                    datasets: [
+                        {
+                            label: 'Dataset Crudo (Interacciones/Usuario)',
+                            data: [1.24, 1.15, 1.30, 1.10],
+                            backgroundColor: 'rgba(148, 163, 184, 0.6)',
+                            borderColor: isLight ? '#64748b' : '#94a3b8',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Dataset Filtrado >=5 (Interacciones/Usuario)',
+                            data: [8.83, 6.20, 9.40, 7.80],
+                            backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                            borderColor: '#8b5cf6',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: textColor }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: textColor } }
+                    }
+                }
+            });
+
+            // 2. Chart: Top Games
+            const ctx2 = document.getElementById('topGamesChart').getContext('2d');
+            charts.topGames = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: ['AppID 9070 (CS Modern)', 'AppID 2360 (RPG Classic)', 'AppID 9060 (Quake/Retro)', 'AppID 9160 (Doom Mod)', 'AppID 2390 (Tactical shooter)'],
+                    datasets: [{
+                        label: 'Número de Reseñas',
+                        data: [119, 113, 109, 107, 105],
+                        backgroundColor: 'rgba(6, 182, 212, 0.7)',
+                        borderColor: '#06b6d4',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { 
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        y: { 
+                            grid: { display: false },
+                            ticks: { color: textColor }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 3. Chart: Word Count Distribution
+            const ctx3 = document.getElementById('wordCountChart').getContext('2d');
+            charts.wordCount = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: ['1-10 pal', '11-20 pal', '21-40 pal', '41-80 pal', '81-120 pal', '121-150 pal', '150+ pal'],
+                    datasets: [{
+                        label: 'Frecuencia de Reseñas',
+                        data: [42000, 35000, 22000, 10500, 3800, 1100, 160],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            grid: { color: gridColor },
+                            ticks: { color: textColor }
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: textColor }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+
+            // 4. Chart: Sparsity Pie
+            const ctx4 = document.getElementById('sparsityChart').getContext('2d');
+            charts.sparsity = new Chart(ctx4, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Celdas Vacías (Sparsity)', 'Interacciones Observadas (Densidad)'],
+                    datasets: [{
+                        data: [97.4261, 2.5739],
+                        backgroundColor: [
+                            isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.06)',
+                            '#8b5cf6'
+                        ],
+                        borderColor: isLight ? '#f1f5f9' : '#111827',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: textColor }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ONLOAD HANDLERS
+        window.addEventListener('load', () => {
+            initCharts(false);
+            loadUserSimulation(0, document.querySelector('.user-option-card'));
+        });
+    </script>
+</body>
+</html>
